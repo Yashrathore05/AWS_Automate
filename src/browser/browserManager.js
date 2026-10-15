@@ -1,5 +1,6 @@
 import { chromium } from 'playwright';
 import fs from 'fs';
+import path from 'path';
 import { CONFIG } from '../config.js';
 
 class BrowserManager {
