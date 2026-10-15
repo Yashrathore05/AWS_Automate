@@ -23,9 +23,10 @@ class WorkflowEngine {
       return { success: false, message: 'Workflow is already in progress.' };
     }
 
-    const campaign = articleDb.getCampaign();
+    let campaign = articleDb.getCampaign();
     if (!campaign) {
-      return { success: false, message: 'No active campaign found.' };
+      articleDb.startCampaign({ durationDays: 90, autoInteract: true });
+      campaign = articleDb.getCampaign();
     }
 
     if (!isManualTrigger && campaign.status !== 'running') {

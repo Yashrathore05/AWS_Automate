@@ -6,6 +6,8 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
+    "daily": "node src/scripts/dailyRun.js",
+    "sync-auth": "node src/scripts/syncSecret.js",
     "auth": "node src/scripts/auth.js",
     "discover": "node src/scripts/discover.js",
     "inspect": "node src/scripts/inspect-page.js",
