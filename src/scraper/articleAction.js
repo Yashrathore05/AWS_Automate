@@ -48,13 +48,22 @@ export async function performArticleInteractions(page, commentText) {
     // 2. --- Comment Action ---
     console.log('[ArticleAction] Attempting automatic Comment submission...');
 
-    // Scroll to comments section if present
+    // Smoothly scroll down the entire article to trigger React lazy-loading for comments
+    console.log('[ArticleAction] Scrolling to load comments section...');
+    await page.evaluate(async () => {
+      const step = 800;
+      const height = document.body.scrollHeight;
+      for (let y = 0; y < height; y += step) {
+        window.scrollTo(0, y);
+        await new Promise(r => setTimeout(r, 120));
+      }
+      window.scrollTo(0, document.body.scrollHeight);
+    });
+    await page.waitForTimeout(2000);
+
     const commentsHeader = page.locator('h2:has-text("Comments"), h3:has-text("Comments"), [id="comments"]').first();
-    const hasHeader = await commentsHeader.isVisible().catch(() => false);
-    if (hasHeader) {
-      await commentsHeader.scrollIntoViewIfNeeded().catch(() => {});
-      await page.waitForTimeout(1200);
-    }
+    await commentsHeader.scrollIntoViewIfNeeded().catch(() => {});
+    await page.waitForTimeout(1000);
 
     // Check if page redirected to AWS sign-in or requires authentication
     if (page.url().includes('signin.aws') || page.url().includes('/login')) {
@@ -68,7 +77,7 @@ export async function performArticleInteractions(page, commentText) {
     const isSignInPromptVisible = await signInPrompt.isVisible().catch(() => false);
     if (isSignInPromptVisible) {
       notes.push('Comment skipped: Active session expired or not signed in');
-      articleDb.addLog('warn', 'Unable to comment: AWS Builder requires active sign-in');
+      articleDb.addLog('warn', 'Unable to comment: AWS Builder requires active sign-in. Please use "Import" to link your session.');
       return { liked, commented: false, notes: notes.join('; ') };
     }
 
@@ -81,6 +90,8 @@ export async function performArticleInteractions(page, commentText) {
       'textarea:visible'
     ].join(', ')).first();
 
+    // Wait up to 6 seconds for the editor to render
+    await commentInput.waitFor({ state: 'visible', timeout: 6000 }).catch(() => {});
     const hasCommentInput = await commentInput.isVisible().catch(() => false);
 
     if (!hasCommentInput) {

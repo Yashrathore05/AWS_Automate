@@ -104,10 +104,8 @@ class AuthService {
                 const label = (el.getAttribute('aria-label') || '').toLowerCase();
                 return text === 'sign in' || label === 'sign in';
               });
-              const userMenu = document.querySelector(
-                '[data-testid*="user-menu"], [data-testid*="avatar"], button[aria-label*="account" i]'
-              );
-              return Boolean(userMenu) || !Boolean(signInBtn);
+              const userHandle = document.querySelector('header a[href*="/community/@"], nav a[href*="/community/@"]');
+              return Boolean(userMenu) || Boolean(userHandle);
             });
 
             if (isAuthed) {
