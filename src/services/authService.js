@@ -15,11 +15,12 @@ class AuthService {
    */
   async checkAuthStatus() {
     try {
-      // 1. If persistent context is active, inspect its cookies
-      if (browserManager.context) {
-        const cookies = await browserManager.context.cookies(['https://builder.aws.com']);
+      // 1. Get or initialize persistent context to inspect cookies
+      const context = await browserManager.getContext();
+      if (context) {
+        const cookies = await context.cookies(['https://builder.aws.com']);
         const hasAuthCookie = cookies.some(c => 
-          /token|session-token|cognito|auth|aws-userInfo/i.test(c.name)
+          c.name === 'builder-session-token' || /token|session-token|cognito|auth|aws-userInfo/i.test(c.name)
         );
 
         // Also check if any open tab is on builder.aws.com and logged in
