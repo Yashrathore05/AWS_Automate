@@ -14,7 +14,7 @@ export const CONFIG = {
   BASE_URL: process.env.AWS_BUILDER_BASE_URL || 'https://builder.aws.com/',
   BROWSER_PROFILE_DIR: path.resolve(ROOT_DIR, process.env.BROWSER_PROFILE_DIR || '.browser_profile'),
   DATABASE_PATH: path.resolve(ROOT_DIR, process.env.DATABASE_PATH || 'data/articles.db'),
-  HEADLESS: process.env.HEADLESS === 'true', // Defaults to false in persistent context if not set
+  HEADLESS: process.env.HEADLESS !== undefined ? process.env.HEADLESS === 'true' : process.platform === 'linux',
   DEFAULT_TIMEZONE: process.env.TIMEZONE || 'Asia/Kolkata',
   DEFAULT_SCHEDULE_TIME: process.env.SCHEDULE_TIME || '09:00', // HH:mm
   DEFAULT_CAMPAIGN_DAYS: 30,

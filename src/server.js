@@ -197,7 +197,7 @@ app.delete('/api/logs', (req, res) => {
 export function startServer(port = CONFIG.PORT) {
   scheduler.start();
 
-  const server = app.listen(port, async () => {
+  const server = app.listen(port, '0.0.0.0', async () => {
     console.log('='.repeat(70));
     console.log(`🌐 AWS Builder Center Automation Dashboard`);
     console.log(`📡 URL: http://localhost:${port}`);
