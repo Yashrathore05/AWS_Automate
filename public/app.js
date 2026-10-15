@@ -75,6 +75,53 @@ function setupEventListeners() {
 
   // Action Buttons
   btnLaunchAuth.addEventListener('click', launchAuthBrowser);
+
+  const btnExportSession = document.getElementById('btn-export-session');
+  const btnImportSession = document.getElementById('btn-import-session');
+  const inputSessionFile = document.getElementById('input-session-file');
+
+  if (btnExportSession) {
+    btnExportSession.addEventListener('click', () => {
+      window.location.href = '/api/auth/export-session';
+    });
+  }
+
+  if (btnImportSession && inputSessionFile) {
+    btnImportSession.addEventListener('click', () => {
+      inputSessionFile.click();
+    });
+
+    inputSessionFile.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        btnImportSession.textContent = 'Importing...';
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        const cookies = Array.isArray(parsed) ? parsed : (parsed.cookies || []);
+        
+        const res = await fetch('/api/auth/import-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cookies })
+        });
+        const data = await res.json();
+        if (data.success) {
+          fetchAuthStatus();
+          fetchLogs();
+          alert(`✅ Success! Imported ${data.count} session cookies into browser profile.`);
+        } else {
+          alert('❌ Failed to import session: ' + (data.error || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('❌ Error reading session file: ' + err.message);
+      } finally {
+        btnImportSession.textContent = '📥 Import';
+        inputSessionFile.value = '';
+      }
+    });
+  }
+
   btnStartCampaign.addEventListener('click', startCampaign);
   btnPauseCampaign.addEventListener('click', pauseCampaign);
   btnResumeCampaign.addEventListener('click', resumeCampaign);

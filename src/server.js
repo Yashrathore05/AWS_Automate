@@ -56,6 +56,36 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+// 3a. Export active session cookies as JSON file
+app.get('/api/auth/export-session', async (req, res) => {
+  try {
+    const context = await browserManager.getContext();
+    const cookies = await context.cookies(['https://builder.aws.com']);
+    res.setHeader('Content-Disposition', 'attachment; filename=aws-session.json');
+    res.setHeader('Content-Type', 'application/json');
+    res.send(JSON.stringify({ cookies, exportedAt: new Date().toISOString() }, null, 2));
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 3b. Import session cookies from JSON
+app.post('/api/auth/import-session', async (req, res) => {
+  try {
+    const { cookies } = req.body;
+    if (!cookies || !Array.isArray(cookies) || cookies.length === 0) {
+      return res.status(400).json({ success: false, error: 'Invalid or empty session cookies data' });
+    }
+    const context = await browserManager.getContext();
+    await context.addCookies(cookies);
+    articleDb.addLog('success', `🔑 Imported ${cookies.length} session cookies into browser profile!`);
+    const status = await authService.checkAuthStatus();
+    res.json({ success: true, count: cookies.length, ...status });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // 4. Campaign Controls: Start
 app.post('/api/campaign/start', (req, res) => {
   try {
