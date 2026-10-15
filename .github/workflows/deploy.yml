@@ -1,0 +1,24 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy code and restart PM2 on EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/AWS_Automate
+            git pull origin main
+            npm install --production
+            pm2 restart aws-builder || pm2 start src/server.js --name "aws-builder"
+            pm2 save
+            echo "🚀 Successfully deployed and restarted aws-builder on EC2!"
